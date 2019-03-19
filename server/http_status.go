@@ -37,11 +37,13 @@ import (
 
 const defaultStatusPort = 10080
 
-func (s *Server) startStatusHTTP() {
-	go s.startHTTPServer()
+func (s *Server) startStatusHTTP() error {
+	errs := make(chan error, 1)
+	go s.startHTTPServer(errs)
+	return <-errs
 }
 
-func (s *Server) startHTTPServer() {
+func (s *Server) startHTTPServer(errs chan error) {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/status", s.handleStatus).Name("Status")
@@ -154,8 +156,12 @@ func (s *Server) startHTTPServer() {
 	}
 
 	if err != nil {
-		log.Info(err)
+		log.Error(err)
+		errs <- err
+	} else {
+		errs <- nil
 	}
+	close(errs)
 }
 
 // status of TiDB.

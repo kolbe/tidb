@@ -285,7 +285,11 @@ func (s *Server) Run() error {
 
 	// Start HTTP API to report tidb info such as TPS.
 	if s.cfg.Status.ReportStatus {
-		s.startStatusHTTP()
+		err := s.startStatusHTTP()
+		if err != nil {
+			log.Errorf("error starting Status listener: %s", err.Error())
+			return err
+		}
 	}
 	for {
 		conn, err := s.listener.Accept()

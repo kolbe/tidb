@@ -709,6 +709,7 @@ func (ts *HTTPHandlerTestSuite) TestServerInfo(c *C) {
 	cfg := config.GetGlobalConfig()
 	c.Assert(info.IsOwner, IsTrue)
 	c.Assert(info.IP, Equals, cfg.AdvertiseAddress)
+	c.Assert(info.StatusHost, Equals, cfg.Status.StatusHost)
 	c.Assert(info.StatusPort, Equals, cfg.Status.StatusPort)
 	c.Assert(info.Lease, Equals, cfg.Lease)
 	c.Assert(info.Version, Equals, mysql.ServerVersion)
