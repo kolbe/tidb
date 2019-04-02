@@ -141,7 +141,7 @@ func main() {
 	}
 	registerStores()
 	registerMetrics()
-	loadConfig()
+	loadConfig(*configCheck)
 	overrideConfig()
 	validateConfig()
 	if *configCheck {
@@ -291,10 +291,10 @@ func flagBoolean(name string, defaultVal bool, usage string) *bool {
 	return flag.Bool(name, defaultVal, usage)
 }
 
-func loadConfig() {
+func loadConfig(configCheck bool) {
 	cfg = config.GetGlobalConfig()
 	if *configPath != "" {
-		err := cfg.Load(*configPath)
+		err := cfg.Load(*configPath, configCheck)
 		terror.MustNil(err)
 	}
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tidb/util/logutil"
+	"github.com/prometheus/common/log"
 	tracing "github.com/uber/jaeger-client-go/config"
 )
 
@@ -371,7 +372,7 @@ func GetGlobalConfig() *Config {
 }
 
 // Load loads config options from a toml file.
-func (c *Config) Load(confFile string) error {
+func (c *Config) Load(confFile string, configCheck bool) error {
 	metaData, err := toml.DecodeFile(confFile, c)
 	if c.TokenLimit <= 0 {
 		c.TokenLimit = 1000
@@ -386,6 +387,10 @@ func (c *Config) Load(confFile string) error {
 			undecodedItems += fmt.Sprintf("  %s \n", item.String())
 		}
 		err = errors.Errorf("config file %s contained unknown configuration options:\n%s", confFile, undecodedItems)
+		if !configCheck {
+			log.Warn(err)
+			err = nil
+		}
 	}
 
 	return errors.Trace(err)
