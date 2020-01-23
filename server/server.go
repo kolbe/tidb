@@ -406,11 +406,23 @@ func (s *Server) onConn(conn *clientConn) {
 	if err := conn.handshake(ctx); err != nil {
 		// Some keep alive services will send request to TiDB and disconnect immediately.
 		// So we only record metrics.
-		metrics.HandShakeErrorCounter.Inc()
-		err = conn.Close()
-		terror.Log(errors.Trace(err))
-		return
-	}
+
+	    if plugin.IsEnable(plugin.Audit) {
+		    conn.ctx.GetSessionVars().ConnectionInfo = conn.connectInfo()
+	    }
+	    err := plugin.ForeachPlugin(plugin.Audit, func(p *plugin.Plugin) error {
+		    authPlugin := plugin.DeclareAuditManifest(p.Manifest)
+		    if authPlugin.OnRejectedConnectionEvent != nil {
+			    sessionVars := conn.ctx.GetSessionVars()
+			    return authPlugin.OnRejectedConnectionEvent(context.Background(), err.Error(), sessionVars.ConnectionInfo)
+		    }
+		    return nil
+	    })
+		    metrics.HandShakeErrorCounter.Inc()
+		    err = conn.Close()
+		    terror.Log(errors.Trace(err))
+		    return
+	    }
 
 	logutil.Logger(ctx).Info("new connection", zap.String("remoteAddr", conn.bufReadConn.RemoteAddr().String()))
 

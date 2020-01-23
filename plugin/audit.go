@@ -83,6 +83,8 @@ type AuditManifest struct {
 	OnGlobalVariableEvent func(ctx context.Context, sctx *variable.SessionVars, varName, varValue string)
 	// OnParseEvent will be called around parse logic.
 	OnParseEvent func(ctx context.Context, sctx *variable.SessionVars, event ParseEvent) error
+	// OnRejectedConnectionEvent will be called when TiDB rejects a connection attempt (wrong credentials, etc.)
+	OnRejectedConnectionEvent func(ctx context.Context, event string, info *variable.ConnectionInfo) error
 }
 
 const (
